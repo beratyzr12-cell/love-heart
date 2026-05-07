@@ -1,1 +1,191 @@
-# love-heart
+# love-heart<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eslem Neon Heart</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    overflow:hidden;
+    background:black;
+}
+
+canvas{
+    display:block;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resize();
+window.addEventListener("resize", resize);
+
+let time = 0;
+
+function heartX(t){
+    return 16 * Math.pow(Math.sin(t),3);
+}
+
+function heartY(t){
+    return 13 * Math.cos(t)
+         - 5 * Math.cos(2*t)
+         - 2 * Math.cos(3*t)
+         - Math.cos(4*t);
+}
+
+const particles = [];
+
+for(let i = 0; i < 1200; i++){
+
+    const t = Math.random() * Math.PI * 2;
+
+    particles.push({
+        t: t,
+        size: Math.random() * 2 + 1,
+        speed: Math.random() * 0.02
+    });
+}
+
+function drawBackground(){
+
+    const gradient = ctx.createRadialGradient(
+        canvas.width/2,
+        canvas.height/2,
+        100,
+        canvas.width/2,
+        canvas.height/2,
+        canvas.width
+    );
+
+    gradient.addColorStop(0,"rgba(0,255,100,0.15)");
+    gradient.addColorStop(1,"black");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function animate(){
+
+    drawBackground();
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    const pulse = 1 + Math.sin(time) * 0.05;
+
+    particles.forEach((p,index)=>{
+
+        p.t += p.speed;
+
+        const x = heartX(p.t) * 22 * pulse;
+        const y = -heartY(p.t) * 22 * pulse;
+
+        const glow = Math.sin(time + index * 0.03);
+
+        ctx.beginPath();
+
+        ctx.fillStyle = `
+            rgba(
+                0,
+                255,
+                ${100 + glow * 100},
+                0.9
+            )
+        `;
+
+        ctx.shadowColor = "#00ff88";
+        ctx.shadowBlur = 25;
+
+        ctx.arc(
+            cx + x,
+            cy + y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    });
+
+    // Neon Kalp Çizgisi
+    ctx.beginPath();
+
+    for(let t = 0; t < Math.PI * 2; t += 0.01){
+
+        const x = heartX(t) * 22 * pulse;
+        const y = -heartY(t) * 22 * pulse;
+
+        if(t === 0){
+            ctx.moveTo(cx + x, cy + y);
+        }else{
+            ctx.lineTo(cx + x, cy + y);
+        }
+    }
+
+    ctx.strokeStyle = "#00ff88";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "#00ff88";
+    ctx.shadowBlur = 30;
+    ctx.stroke();
+
+    // Yazı
+    ctx.font = "bold 70px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = "#00ff88";
+    ctx.shadowBlur = 40;
+
+    ctx.fillText("Eslem", cx, cy);
+
+    // Parlayan yıldızlar
+    for(let i = 0; i < 50; i++){
+
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+
+        ctx.beginPath();
+
+        ctx.fillStyle = "rgba(0,255,150,0.8)";
+        ctx.shadowColor = "#00ff88";
+        ctx.shadowBlur = 15;
+
+        ctx.arc(x,y,1.5,0,Math.PI*2);
+
+        ctx.fill();
+    }
+
+    time += 0.03;
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
